@@ -1,5 +1,9 @@
-#include "threadpool.h"
+#include "glapp.h"
+#include "stealpool.h"
+/*#include "threadpool.h"*/
 #include <chrono>
+#include <exception>
+#include <future>
 #include <iostream>
 
 bool job() {
@@ -9,40 +13,25 @@ bool job() {
   return true;
 }
 
+auto gui_ = [] {
+  // Create a window called "My First Tool", with a menu bar.
+  ImGui::Begin("Hello, ImGui!");           // Create a window
+  ImGui::Text("This is a simple window."); // Display some text
+  ImGui::Text("Frame rate: %.1f FPS", ImGui::GetIO().Framerate); // Display FPS
+  ImGui::End();
+};
+
 int main() {
-  threadpool pool;
-  /*std::future<bool> i = pool.submit([]{return job();});*/
-  /*std::cout << i.get() << std::endl;*/
-  auto start = std::chrono::high_resolution_clock::now();
-  for (int i = 0; i < 100; i++) {
-    pool.submit([] { job(); });
+  try {
+    /*threadpool pool;*/
+    stealpool steal;
+    steal.submit([] {job();});
+    glapp::getInst().initContext();
+    glapp::getInst().getImgui()->setGUI(gui_);
+    glapp::getInst().glAppStart();
+  } catch (const std::exception &e) {
+    // Catch the exception and print its detailed message
+    std::cout << "Exception caught: " << e.what() << std::endl;
   }
-  auto end = std::chrono::high_resolution_clock::now();
-
-  auto start1 = std::chrono::high_resolution_clock::now();
-  for (int i = 0; i < 100; i++) {
-    job();
-  }
-  auto end1 = std::chrono::high_resolution_clock::now();
-
-  auto duration =
-      std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-
-  auto duration1 =
-      std::chrono::duration_cast<std::chrono::microseconds>(end1 - start1);
-
-  std::cout << "Time taken with thread: " << duration.count() << "microseconds"
-            << std::endl;
-  std::cout << "Time taken without thread: " << duration1.count()
-            << "microseconds" << std::endl;
-
-  /*bool done = false;*/
-  /*while (!done) {*/
-  /*  int a;*/
-  /*  std::cin >> a;*/
-  /*  if (a>0) {*/
-  /*    pool.submit([]{job();});*/
-  /*  } else return 0;*/
-  /*}*/
   return 0;
 }
