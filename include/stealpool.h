@@ -63,9 +63,9 @@ public:
     std::packaged_task<result_type> task(f);
     std::future<result_type> result(task.get_future());
     if (local_queue) {
-      local_queue->push(task);
+      local_queue->push(std::move(task));
     } else {
-      pool_task_queue.push(task);
+      pool_task_queue.push(std::move(task));
     }
     return result;
   }

@@ -1,6 +1,6 @@
 #include "glapp.h"
 #include "stealpool.h"
-/*#include "threadpool.h"*/
+#include "threadpool.h"
 #include <chrono>
 #include <exception>
 #include <future>
@@ -25,7 +25,7 @@ int main() {
   try {
     /*threadpool pool;*/
     stealpool steal;
-    steal.submit([] {job();});
+    steal.submit();
     glapp::getInst().initContext();
     glapp::getInst().getImgui()->setGUI(gui_);
     glapp::getInst().glAppStart();
