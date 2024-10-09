@@ -1,17 +1,13 @@
 
 #include <memory>
-#include <shader.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include "imguiManager.h"
+#include "stealpool.h"
+/*#include <glad/glad.h>*/
+#include <shader.h>
 
+struct DestroyglfwWin {
 
-struct DestroyglfwWin{
-
-    void operator()(GLFWwindow* ptr){
-         glfwDestroyWindow(ptr);
-    }
-
+  void operator()(GLFWwindow *ptr) { glfwDestroyWindow(ptr); }
 };
 
 class glapp {
@@ -22,10 +18,10 @@ private:
     glfwTerminate();
     deleteShader();
   }
-  glapp(const glapp&) = delete;
-  glapp& operator=(const glapp&) = delete;
+  glapp(const glapp &) = delete;
+  glapp &operator=(const glapp &) = delete;
 
-  std::unique_ptr<GLFWwindow,DestroyglfwWin> windowApp;
+  std::unique_ptr<GLFWwindow, DestroyglfwWin> windowApp;
   std::unique_ptr<imguiManager> imgui;
 
   static void framebuffer_size_callback(GLFWwindow *window, int width,
@@ -49,7 +45,9 @@ private:
   void deleteShader();
 
 public:
-  static glapp& getInst() {
+  static std::unique_ptr<stealpool> tpool;
+
+  static glapp &getInst() {
     static glapp instance;
     return instance;
   }
@@ -59,6 +57,6 @@ public:
   void glAppStart();
   void initOpenGL();
   void initBuffers();
-  imguiManager* getImgui();
+  imguiManager *getImgui();
   GLFWwindow *getpWindow();
 };

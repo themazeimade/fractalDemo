@@ -2,6 +2,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "implot.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <functional>
 
@@ -50,16 +51,12 @@ public:
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    /*ImGui::ShowDemoWindow(); // Show demo window! :)*/
     gui();
-    ImPlot::ShowDemoWindow();
   }
   void draw() {
     // Rendering
-    // (Your code clears your framebuffer, renders your other stuff etc.)
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    // (Your code calls glfwSwapBuffers() etc.)
   }
 };
 

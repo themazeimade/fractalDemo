@@ -23,8 +23,8 @@ target_include_directories(ThreadPlot PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 target_include_directories(ThreadPlot PRIVATE ${IMGUI_DIR} ${IMGUI_DIR}/backends/ ${IMPLOT_DIR})
 
-# find_package(Threads REQUIRED)
-# target_link_libraries(Test1 PRIVATE Threads::Threads)
+find_package(Threads REQUIRED)
+target_link_libraries(ThreadPlot Threads::Threads)
 
 find_package(OpenGL REQUIRED)
 find_package(glfw3 3.4 REQUIRED)

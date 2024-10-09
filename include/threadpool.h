@@ -3,10 +3,10 @@
 #include "tsqueue.h"
 #include "utilities.h"
 #include <future>
+#include <iostream>
 #include <queue>
 #include <thread>
 #include <vector>
-
 
 class threadpool { // with steal implementation
   std::atomic_bool done;
@@ -34,10 +34,12 @@ public:
       throw;
     }
   }
-  ~threadpool() { done = true; }
+  ~threadpool() {
+    done = true;
+  }
   template <typename FunctionType>
   std::future<typename std::result_of<FunctionType(void)>::type>
-  submit(FunctionType f) {//function
+  submit(FunctionType f) { // function
     typedef typename std::result_of<FunctionType()>::type result_type;
     std::packaged_task<result_type()> task(std::move(f));
     std::future<result_type> res(task.get_future());

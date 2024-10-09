@@ -1,6 +1,7 @@
 #include "tsqueue.h"
 #include "wsqueue.h"
 #include <future>
+#include <iostream>
 #include <memory>
 #include <thread>
 #include <type_traits>
@@ -11,24 +12,27 @@ class stealpool {
   std::atomic_bool done;
   ts_queue<task_type> pool_task_queue;
   std::vector<std::unique_ptr<wsqueue>> local_task_queues;
-  inline thread_local static unsigned queue_index;
-  inline thread_local static wsqueue *local_queue;
   std::vector<std::thread> threads;
   join_threads joiner;
-
+  inline static thread_local wsqueue *local_queue;
+  inline static thread_local unsigned queue_index;
 
   void worker_thread(unsigned index) {
     queue_index = index;
     local_queue = local_task_queues[queue_index].get();
+    /*std::cout << queue_index << std::endl;*/
+
     while (!done) {
       run_pending_task();
     }
   }
 
   bool popTask_fromLocal(task_type &task) {
-    return local_queue && local_queue->try_pop(task);
+    bool res = local_queue && local_queue->try_pop(task);
+    return res;
   }
   bool popTask_fromPool(task_type &task) {
+    /*std::cout << "poptask from pool" << std::endl;*/
     return pool_task_queue.try_pop(task);
   }
   bool stealTask_fromOther(task_type &task) {
@@ -56,11 +60,14 @@ public:
       throw;
     }
   }
+
+  int TaskCount() { return pool_task_queue.getsize(); }
+
   template <typename functiontype>
-  std::future<typename std::result_of_t<functiontype()>::type>
+  std::future<typename std::result_of<functiontype(void)>::type>
   submit(functiontype f) {
     typedef typename std::result_of<functiontype()>::type result_type;
-    std::packaged_task<result_type> task(f);
+    std::packaged_task<result_type()> task(std::move(f));
     std::future<result_type> result(task.get_future());
     if (local_queue) {
       local_queue->push(std::move(task));

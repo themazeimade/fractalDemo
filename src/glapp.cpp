@@ -1,8 +1,10 @@
 #include <cmath>
 #include <geometry.h>
-#include <glapp.h>
 #include <iostream>
 #include <memory>
+#include <glapp.h>
+
+std::unique_ptr<stealpool> glapp::tpool = std::make_unique<stealpool>();
 
 void glapp::initWindow() {
   glfwInit();
@@ -17,6 +19,8 @@ void glapp::initWindow() {
   }
 
   glfwMakeContextCurrent(windowApp.get());
+
+  glfwSwapInterval(1);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cout << "Failed to initialize GLAD" << std::endl;
