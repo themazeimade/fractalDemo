@@ -3,6 +3,12 @@
 #include <thread>
 #include <vector>
 
+template <typename Tfloat>
+struct Vector2d {
+  Tfloat x;
+  Tfloat y;
+};
+
 class functionWrapper {
   struct impl_b {
     virtual void call() {};
