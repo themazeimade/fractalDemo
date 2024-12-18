@@ -1,15 +1,17 @@
+#pragma once
 #include "tsqueue.h"
 #include "wsqueue.h"
 #include <future>
-#include <iostream>
 #include <memory>
 #include <thread>
 #include <type_traits>
 #include <vector>
 
+
 class stealpool {
   typedef functionWrapper task_type;
   std::atomic_bool done;
+  const unsigned int thread_count;
   ts_queue<task_type> pool_task_queue;
   std::vector<std::unique_ptr<wsqueue>> local_task_queues;
   std::vector<std::thread> threads;
@@ -46,8 +48,8 @@ class stealpool {
   }
 
 public:
-  stealpool() : done(false), joiner(threads) {
-    unsigned const thread_count = std::thread::hardware_concurrency();
+  stealpool() : done(false), thread_count(std::thread::hardware_concurrency()-4) , joiner(threads) {
+    /*thread_count = std::thread::hardware_concurrency();*/
     try {
       for (unsigned i = 0; i < thread_count; ++i) {
         local_task_queues.push_back(std::unique_ptr<wsqueue>(new wsqueue));
@@ -61,7 +63,17 @@ public:
     }
   }
 
+  bool isDone (){
+    return pool_task_queue.getRemaining_tasks() == 0;
+  }
+
+  int getRamaining_task() {
+    return pool_task_queue.getRemaining_tasks();
+  }
+
   int TaskCount() { return pool_task_queue.getsize(); }
+
+  int getThreadCount() {return thread_count;}
 
   template <typename functiontype>
   std::future<typename std::result_of<functiontype(void)>::type>
@@ -83,9 +95,14 @@ public:
     task_type task;
     if (popTask_fromLocal(task) || popTask_fromPool(task) ||
         stealTask_fromOther(task)) {
+      /*pool_task_queue.TaskOneUp();*/
       task();
+      pool_task_queue.TaskDone();
     } else {
       std::this_thread::yield();
     }
   }
 };
+
+extern stealpool Tpool;
+/*static constexpr unsigned stealpool::thread_count = std::thread::hardware_concurrency(); */

@@ -1,13 +1,13 @@
 #pragma once
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <memory>
 #include <thread>
 #include <vector>
 
-template <typename Tfloat>
-struct Vector2d {
-  Tfloat x;
-  Tfloat y;
-};
+constexpr int WIDTH = 1920;
+constexpr int HEIGHT = 1080;
+
 
 class functionWrapper {
   struct impl_b {

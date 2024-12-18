@@ -1,9 +1,10 @@
-
-#include <memory>
+#pragma once
+#include "renderer.h"
 #include "imguiManager.h"
-#include "stealpool.h"
+#include <memory>
+/*#include "stealpool.h"*/
 /*#include <glad/glad.h>*/
-#include <shader.h>
+/*#include <shader.h>*/
 
 struct DestroyglfwWin {
 
@@ -23,9 +24,13 @@ private:
 
   std::unique_ptr<GLFWwindow, DestroyglfwWin> windowApp;
   std::unique_ptr<imguiManager> imgui;
+  std::unique_ptr<renderer<config::Tfloat>> FractalRenderer;
+  /*renderer<config::Tfloat> Renderer;*/
 
   static void framebuffer_size_callback(GLFWwindow *window, int width,
                                         int height);
+  static void keyboard_callback(GLFWwindow *window, int key, int scancode,
+                                int action, int mods);
 
   unsigned int VertexBuffer;
   unsigned int ElementBuffer;
@@ -45,7 +50,22 @@ private:
   void deleteShader();
 
 public:
-  static std::unique_ptr<stealpool> tpool;
+  /*static std::unique_ptr<stealpool> tpool;*/
+
+  // input things
+  config::Tfloat zoom_factor = static_cast<config::Tfloat>(1.005);
+  const config::Tfloat speed = static_cast<config::Tfloat>(1.0);
+  config::Tfloat zoom = static_cast<config::Tfloat>(HEIGHT/2.0);
+  std::array<config::Tfloat, 2> center = {0.0, 0.0};
+
+  bool zoom_in = false;
+  bool zoom_out = false;
+  bool left = false;
+  bool right = false;
+  bool up = false;
+  bool down = false;
+
+  // constructor abstraction
 
   static glapp &getInst() {
     static glapp instance;

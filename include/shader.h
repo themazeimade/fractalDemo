@@ -1,5 +1,5 @@
 #pragma once
-#include <glad/glad.h> // include glad to get all the required OpenGL headers
+#include "utilities.h" // include glad to get all the required OpenGL headers
 #include <string>
   
 
@@ -17,6 +17,8 @@ public:
     void setBool(const std::string &name, bool value) const;  
     void setInt(const std::string &name, int value) const;   
     void setFloat(const std::string &name, float value) const;
+    void set3Float(const std::string &name, float* value) const;
+    void set2Float(const std::string &name, float* value) const;
 };
 
 

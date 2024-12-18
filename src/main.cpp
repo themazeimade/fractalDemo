@@ -1,7 +1,9 @@
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "glapp.h"
-#include "imgui.h"
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <iostream>
 
 struct scrollingBuff {
@@ -38,7 +40,7 @@ bool job() { // simulate job
 
 void jobs(int n) {
   for (int i = 0; i < n; ++i) {
-    glapp::tpool->submit(job);
+    Tpool.submit(job);
   }
 }
 
@@ -48,9 +50,10 @@ auto Stats_ = [] {
   static scrollingBuff taskStat;
   static float t = 0;
   t += ImGui::GetIO().DeltaTime;
-  taskStat.addData(t, (float)(glapp::tpool->TaskCount()) * 0.005f);
+  taskStat.addData(t, (float)(Tpool.getRamaining_task()) * 0.05f);
   /*ImGui::Text("This is a simple window."); // Display some text*/
-  /*ImGui::Text("Frame rate: %.1f FPS", ImGui::GetIO().Framerate); // Display FPS*/
+  /*ImGui::Text("Frame rate: %.1f FPS", ImGui::GetIO().Framerate); // Display
+   * FPS*/
 
   static ImPlotAxisFlags flags = ImPlotAxisFlags_NoTickLabels;
   static float history = 10.0f;
@@ -74,7 +77,7 @@ auto Control_ = [] {
   ImGui::Begin("Simulate things");
   ImGui::Checkbox("Show Stats", &showStats);
   if (ImGui::Button("Submit Job")) {
-    glapp::tpool->submit(job);
+    Tpool.submit(job);
   }
   if (ImGui::Button("Submit 5 Jobs")) {
     jobs(5);
@@ -97,8 +100,22 @@ auto gui_ = [] {
 
 // entry point
 int main() {
-  glapp::getInst().initContext();
-  glapp::getInst().getImgui()->setGUI(gui_);
-  glapp::getInst().glAppStart();
+  /*if (Tpool.isDone()==0) {*/
+  /*  printf("ThreadPool is Done");*/
+  /*} else {*/
+  /*  printf("ThreadPool is not Done");*/
+  /*}*/
+  try {
+    // Code that may throw an exception
+    glapp::getInst().initContext();
+    glapp::getInst().getImgui()->setGUI(gui_);
+    glapp::getInst().glAppStart();
+  } catch (const std::exception &e) {
+    // Code to handle the exception
+    std::cerr << "Exception caught: " << e.what() << std::endl;
+  } catch (...) {
+    // Catch any exception (optional)
+    std::cerr << "An unknown exception occurred!" << std::endl;
+  }
   return 0;
 }

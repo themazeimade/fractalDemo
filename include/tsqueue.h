@@ -1,7 +1,6 @@
 #pragma once
 #include <atomic>
 #include <condition_variable>
-#include <iostream>
 #include <memory>
 #include <mutex>
 
@@ -25,10 +24,12 @@ private:
   std::unique_ptr<node> try_pop_head();
   std::unique_ptr<node> try_pop_head(T &value);
 
-  std::atomic_int tasksinqueue;
+  std::atomic_uint32_t tasksinqueue;
+  std::atomic_uint32_t remaining_tasks;
 
 public:
-  ts_queue() : head(new node), tail(head.get()), tasksinqueue(0) {}
+  ts_queue()
+      : head(new node), tail(head.get()), tasksinqueue(0), remaining_tasks(0) {}
   ts_queue(const ts_queue &other) = delete;
   ts_queue &operator=(const ts_queue &other) = delete;
 
@@ -38,12 +39,13 @@ public:
   void wait_and_pop(T &value);
   void push(T new_value);
   bool empty();
+  void TaskDone() { remaining_tasks--; };
+  void TaskOneUp() { remaining_tasks++; };
+  int getRemaining_tasks() { return remaining_tasks; }
   int getsize();
 };
 
-template <typename T> int ts_queue<T>::getsize() {
-  return tasksinqueue.load();
-}
+template <typename T> int ts_queue<T>::getsize() { return tasksinqueue.load(); }
 
 template <typename T> void ts_queue<T>::push(T new_value) {
   std::shared_ptr<T> new_data(std::make_shared<T>(std::move(new_value)));
@@ -54,7 +56,8 @@ template <typename T> void ts_queue<T>::push(T new_value) {
     node *const new_tail = p.get();
     tail->next = std::move(p);
     tail = new_tail;
-    tasksinqueue++;
+    ++tasksinqueue;
+    ++remaining_tasks;
   }
   data_cond.notify_one();
 }
@@ -68,7 +71,6 @@ template <typename T>
 std::unique_ptr<typename ts_queue<T>::node> ts_queue<T>::pop_head() {
   std::unique_ptr<node> old_head = std::move(head);
   head = std::move(old_head->next);
-  tasksinqueue--;
   return old_head;
 }
 
@@ -120,7 +122,10 @@ template <typename T> std::shared_ptr<T> ts_queue<T>::try_pop() {
 
 template <typename T> bool ts_queue<T>::try_pop(T &value) {
   std::unique_ptr<node> const old_head = try_pop_head(value);
-  return old_head ? true : false;
+  auto result = old_head ? true : false;
+  if (result)
+    --tasksinqueue;
+  return result;
 }
 
 template <typename T> bool ts_queue<T>::empty() {

@@ -1,9 +1,8 @@
-/*#pragma once*/
+#pragma once
 
 #include "tsqueue.h"
 #include "utilities.h"
 #include <future>
-#include <iostream>
 #include <queue>
 #include <thread>
 #include <vector>
